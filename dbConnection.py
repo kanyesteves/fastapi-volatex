@@ -16,14 +16,12 @@ class DBConnection:
                 password=self.password,
                 database=self.database
             )
-            print("Conexão estabelecida com sucesso !!")
+            print("[DB]:     Conexão estabelecida com sucesso !!")
+            return self.connection
         except mysql.connector.Error as er:
-            print(f"Erro ao se conectar com o Mysql {er}")
+            print(f"[DB]:     Erro ao se conectar com o Mysql {er}")
 
     def disconnect(self):
         if self.connection.is_connected():
             self.connection.close()
-            print("Conexão ao Mysql encerrada.")
-
-db = DBConnection(host='localhost', user='root', password='', database='')
-db.connect()
+            print("[DB]:     Conexão ao Mysql encerrada.")
