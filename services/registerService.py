@@ -1,47 +1,30 @@
-import mysql.connector
+import uuid
+from firebase_admin import db
 
 
 class RegisterService:
-    def __init__(self, mysql):
-        self.mysql = mysql
-        self.cursor = mysql.cursor()
 
     def get_production(self):
-        try:
-            sql = "SELECT id, numero_peça, tear, peso, fornecedor, produto, revisao, operador, `date` FROM production"
-            self.cursor.execute(sql)
-            results = self.cursor.fetchall()
-            productions = [dict(zip(self.cursor.column_names, result)) for result in results]
-            return productions 
-        except mysql.connector.Error as err:
-            print(f"[DB]:     Erro ao buscar peças: {err}")
+        db_productions = db.reference("db-volatex/production/")
+        productions = db_productions.get()
+        return productions 
 
     def get_products_supplier(self):
-        try:
-            sql = "SELECT id, fornecedor, produto, created_at FROM products_suppliers"
-            self.cursor.execute(sql)
-            results = self.cursor.fetchall()
-            products_suppliers = [dict(zip(self.cursor.column_names, result)) for result in results]
-            return products_suppliers 
-        except mysql.connector.Error as err:
-            print(f"[DB]:     Erro ao buscar fornecedores: {err}")
+        db_products_supplier = db.reference("db-volatex/products_supplier/")
+        products_suppliers = db_products_supplier.get()
+        return products_suppliers 
 
     def get_tear(self):
-        try:
-            sql = "SELECT id, nome, modelo, created_at FROM teares"
-            self.cursor.execute(sql)
-            results = self.cursor.fetchall()
-            teares = [dict(zip(self.cursor.column_names, result)) for result in results]
-            return teares 
-        except mysql.connector.Error as err:
-            print(f"[DB]:     Erro ao buscar teares: {err}")
+        db_teares = db.reference("db-volatex/teares/")
+        teares = db_teares.get()
+        return teares 
+
+    def get_operator(self):
+        db_operators = db.reference("db-volatex/operators/")
+        operators = db_operators.get() 
+        return operators
     
     def save_production(self, data: dict):
-        try:
-            sql = "INSERT INTO production (numero_peça, tear, peso, fornecedor, produto, revisao, operador, `date`) VALUES(%s, %s, %s, %s, %s, %s, %s, %s)"
-            self.cursor.execute(sql, (data['num_peça'], data['tear'], data['peso'], data['fornecedor'], data['produto'], data['revisao'], data['operador'], data['date']))
-            self.mysql.commit()
-            message = f"Peça inserida com sucesso !!"
-            return message
-        except mysql.connector.Error as err:
-            print(f"[DB]:     Erro ao salvar peça: {err}")
+        db_productions = db.reference(f"db-volatex/production/{data['num_peça']}-{data['fornecedor']}-{data['produto']}")
+        db_productions.set(data)
+        return "Peça inserida com sucesso !!"

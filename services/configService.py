@@ -1,157 +1,84 @@
-import mysql.connector
+import uuid
+from firebase_admin import db
 
 
 class ConfigService:
-    def __init__(self, mysql):
-        self.mysql = mysql
-        self.cursor = mysql.cursor()
 
     def get_production(self):
-        try:
-            sql = "SELECT id, numero_peça, tear, peso, fornecedor, produto, revisao, operador, `date` FROM production"
-            self.cursor.execute(sql)
-            results = self.cursor.fetchall()
-            productions = [dict(zip(self.cursor.column_names, result)) for result in results]
-            return productions 
-        except mysql.connector.Error as err:
-            print(f"[DB]:     Erro ao buscar peças: {err}")
+        db_productions = db.reference("db-volatex/production/")
+        productions = db_productions.get()
+        return productions 
 
     def get_products_supplier(self):
-        try:
-            sql = "SELECT id, fornecedor, produto, created_at FROM products_suppliers"
-            self.cursor.execute(sql)
-            results = self.cursor.fetchall()
-            products_suppliers = [dict(zip(self.cursor.column_names, result)) for result in results]
-            return products_suppliers 
-        except mysql.connector.Error as err:
-            print(f"[DB]:     Erro ao buscar fornecedores: {err}")
+        db_products_supplier = db.reference("db-volatex/products_supplier/")
+        products_suppliers = db_products_supplier.get()
+        return products_suppliers 
 
     def get_tear(self):
-        try:
-            sql = "SELECT id, nome, modelo, created_at FROM teares"
-            self.cursor.execute(sql)
-            results = self.cursor.fetchall()
-            teares = [dict(zip(self.cursor.column_names, result)) for result in results]
-            return teares 
-        except mysql.connector.Error as err:
-            print(f"[DB]:     Erro ao buscar teares: {err}")
+        db_teares = db.reference("db-volatex/teares/")
+        teares = db_teares.get()
+        return teares 
 
     def get_operator(self):
-        try:
-            sql = "SELECT id, nome, cargo, created_at FROM operators"
-            self.cursor.execute(sql)
-            results = self.cursor.fetchall()
-            operators = [dict(zip(self.cursor.column_names, result)) for result in results]
-            return operators 
-        except mysql.connector.Error as err:
-            print(f"[DB]:     Erro ao buscar teares: {err}")
+        db_operators = db.reference("db-volatex/operators/")
+        operators = db_operators.get() 
+        return operators
 
     def save_tear(self, data: dict):
-        try:
-            sql = "INSERT INTO teares (nome, modelo, created_at) VALUES(%s, %s, %s)"
-            self.cursor.execute(sql, (data['nome'], data['modelo'], data['created_at']))
-            self.mysql.commit()
-            message = f"Tear inserida com sucesso !!"
-            return message
-        except mysql.connector.Error as err:
-            print(f"[DB]:     Erro ao salvar tear: {err}")
+        db_teares = db.reference(f"db-volatex/teares/{data['nome']}")
+        db_teares.set(data)
+        return "Tear inserida com sucesso !!"
 
     def save_operator(self, data: dict):
-        try:
-            sql = "INSERT INTO operators (nome, cargo, created_at) VALUES(%s, %s, %s)"
-            self.cursor.execute(sql, (data['nome'], data['cargo'], data['created_at']))
-            self.mysql.commit()
-            message = f"Operador inserido com sucesso !!"
-            return message
-        except mysql.connector.Error as err:
-            print(f"[DB]:     Erro ao salvar operador: {err}")
+        db_operators = db.reference(f"db-volatex/operators/{data['nome']}")
+        db_operators.set(data)
+        return "Operador inserido com sucesso !!"
 
     def save_product_supplier(self, data: dict):
-        try:
-            sql = "INSERT INTO products_suppliers (fornecedor, produto, created_at) VALUES(%s, %s, %s)"
-            self.cursor.execute(sql, (data['fornecedor'], data['produto'], data['created_at']))
-            self.mysql.commit()
-            message = f"Fornecedor inserido com sucesso !!"
-            return message
-        except mysql.connector.Error as err:
-            print(f"[DB]:     Erro ao salvar fornecedor: {err}")
+        db_products_supplier = db.reference(f"db-volatex/products_supplier/{data['fornecedor']}-{data['produto']}")
+        db_products_supplier.set(data)
+        return "Fornecedor inserido com sucesso !!"
 
     def update_production(self, data: dict):
-        try:
-            sql = f"UPDATE production SET {data['column_name']} = %s WHERE id = %s"
-            self.cursor.execute(sql, (data['data']['value'], data['data']['id_peça']))
-            self.mysql.commit()
-            message = f"Valor atualizado com sucesso !!"
-            return message
-        except mysql.connector.Error as err:
-            print(f"[DB]:     Erro ao atualizar a tabela: {err}")
+        db_productions = db.reference(f"db-volatex/production/{data['num_peça']}-{data['fornecedor']}-{data['produto']}")
+        db_productions.set(data)
+        return "Valor atualizado com sucesso"
 
     def update_tear(self, data: dict):
-        try:
-            sql = f"UPDATE teares SET {data['column_name']} = %s WHERE id = %s"
-            self.cursor.execute(sql, (data['data']['value'], data['data']['id_tear']))
-            self.mysql.commit()
-            message = f"Valor atualizado com sucesso !!"
-            return message
-        except mysql.connector.Error as err:
-            print(f"[DB]:     Erro ao atualizar a tabela: {err}")
+        db_teares = db.reference(f"db-volatex/teares/{data['nome']}")
+        db_teares.set(data)
+        return "Valor atualizado com sucesso"
 
     def update_operator(self, data: dict):
-        try:
-            sql = f"UPDATE operators SET {data['column_name']} = %s WHERE id = %s"
-            self.cursor.execute(sql, (data['data']['value'], data['data']['id_tear']))
-            self.mysql.commit()
-            message = f"Valor atualizado com sucesso !!"
-            return message
-        except mysql.connector.Error as err:
-            print(f"[DB]:     Erro ao atualizar a tabela: {err}")
+        db_operators = db.reference(f"db-volatex/operators/{data['nome']}")
+        db_operators.set(data)
+        return "Valor atualizado com sucesso"
 
     def update_products_supplier(self, data: dict):
-        try:
-            sql = f"UPDATE products_suppliers SET {data['column_name']} = %s WHERE id = %s"
-            self.cursor.execute(sql, (data['data']['value'], data['data']['id_tear']))
-            self.mysql.commit()
-            message = f"Valor atualizado com sucesso !!"
-            return message
-        except mysql.connector.Error as err:
-            print(f"[DB]:     Erro ao atualizar a tabela: {err}")
+        db_products_supplier = db.reference(f"db-volatex/products_supplier/{data['fornecedor']}-{data['produto']}")
+        db_products_supplier.set(data)
+        return "Valor atualizado com sucesso"
 
     def delete_production(self, data: dict):
-        try:
-            sql = f"DELETE FROM production WHERE numero_peça = %s"
-            self.cursor.execute(sql, (data["numero_peça"],))
-            self.mysql.commit()
-            message = f"Valor removido com sucesso !!"
-            return message
-        except mysql.connector.Error as err:
-            print(f"[DB]:     Erro ao removido valor da tabela: {err}")
+        data['remove'] = True
+        db_products_supplier = db.reference(f"db-volatex/production/{data['num_peça']}-{data['fornecedor']}-{data['produto']}")
+        db_products_supplier.set(data)
+        return "Peça removida com sucesso"
 
     def delete_tear(self, data: dict):
-        try:
-            sql = f"DELETE FROM teares WHERE id = %s"
-            self.cursor.execute(sql, (data["id_tear"],))
-            self.mysql.commit()
-            message = f"Valor removido com sucesso !!"
-            return message
-        except mysql.connector.Error as err:
-            print(f"[DB]:     Erro ao removido valor da tabela: {err}")
+        data['remove'] = True
+        db_teares = db.reference(f"db-volatex/teares/{data['nome']}")
+        db_teares.set(data)
+        return "Tear removido com sucesso"
 
     def delete_operator(self, data: dict):
-        try:
-            sql = f"DELETE FROM operators WHERE id = %s"
-            self.cursor.execute(sql, (data["id_operator"],))
-            self.mysql.commit()
-            message = f"Valor removido com sucesso !!"
-            return message
-        except mysql.connector.Error as err:
-            print(f"[DB]:     Erro ao removido valor da tabela: {err}")
+        data['remove'] = True
+        db_operators = db.reference(f"db-volatex/operators/{data['nome']}")
+        db_operators.set(data)
+        return "Operador removido com sucesso"
 
     def delete_products_supplier(self, data: dict):
-        try:
-            sql = f"DELETE FROM products_suppliers WHERE id = %s"
-            self.cursor.execute(sql, (data["id_products_supplier"],))
-            self.mysql.commit()
-            message = f"Valor removido com sucesso !!"
-            return message
-        except mysql.connector.Error as err:
-            print(f"[DB]:     Erro ao removido valor da tabela: {err}")
+        data['remove'] = True
+        db_products_supplier = db.reference(f"db-volatex/products_supplier/{data['fornecedor']}-{data['produto']}")
+        db_products_supplier.set(data)
+        return "Fornecedor removido com sucesso"

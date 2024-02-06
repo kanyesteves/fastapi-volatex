@@ -1,35 +1,37 @@
 import uvicorn
-import mysql.connector
+import firebase_admin
 from fastapi import FastAPI
-from dbConnection import DBConnection
+from firebase_admin import credentials
+from services.userService import UserService
 from services.graphsService import GraphsService
 from services.registerService import RegisterService
 from services.exportService import ExportService
 from services.configService import ConfigService
 
-db = DBConnection(host='localhost', user='root', password='132567', database='volatex_dev')
-mysql = db.connect()
-cursor = mysql.cursor()
+if not firebase_admin._apps:
+    cred = credentials.Certificate("db-volatex-realtime-firebase-adminsdk.json")
+
+firebase_admin.initialize_app(cred, {
+    'databaseURL': 'https://db-volatex-realtime-default-rtdb.firebaseio.com/'
+})
+
 
 app = FastAPI()
-graphsService = GraphsService(mysql)
-registerService = RegisterService(mysql)
-exportService = ExportService(mysql)
-configService = ConfigService(mysql)
+userService = UserService()
+graphsService = GraphsService()
+registerService = RegisterService()
+exportService = ExportService()
+configService = ConfigService()
 
-
-
-page_login = "login"
-@app.get('/get_users/')
+##### USERS
+page_users = "users"
+@app.get(f'/{page_users}/get_users/')
 def get_users():
-    try:
-        sql = "SELECT name, password FROM user"
-        cursor.execute(sql)
-        results = cursor.fetchall()
-        users = [dict(zip(cursor.column_names, result)) for result in results]
-        return users 
-    except mysql.connector.Error as err:
-        print(f"[DB]:     Erro ao buscar usuários: {err}")
+    return userService.get_users()
+
+@app.post(f'/{page_users}/save_user/')
+def save_user(data: dict):
+    return userService.save_user(data)
 
 
 ##### GRAPHS
@@ -47,7 +49,7 @@ def get_products_supplier():
     return registerService.get_products_supplier()
 
 
-##### REGISTER
+# ##### REGISTER
 page_register = "register"
 @app.get(f'/{page_register}/get_production/')
 def get_production():
@@ -60,6 +62,10 @@ def get_tear():
 @app.get(f'/{page_register}/get_products_suppliers/')
 def get_products_supplier():
     return registerService.get_products_supplier()
+
+@app.get(f'/{page_register}/get_operators/')
+def get_operator():
+    return registerService.get_operator()
 
 @app.post(f'/{page_register}/save_production/')
 def save_production(data: dict):
@@ -77,7 +83,7 @@ def get_products_supplier():
     return exportService.get_products_supplier()
 
 
-##### CONFIG
+# ##### CONFIG
 page_config = "config"
 @app.get(f'/{page_config}/get_production/')
 def get_production():
