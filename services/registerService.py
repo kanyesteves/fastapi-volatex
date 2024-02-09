@@ -28,3 +28,18 @@ class RegisterService:
         db_productions = db.reference(f"db-volatex/production/{data['num_peça']}-{data['fornecedor']}-{data['produto']}")
         db_productions.set(data)
         return "Peça inserida com sucesso !!"
+
+    def save_tear(self, data: dict):
+        db_teares = db.reference(f"db-volatex/teares/{data['nome']}")
+        db_teares.set(data)
+        return "Tear inserida com sucesso !!"
+
+    def save_operator(self, data: dict):
+        db_operators = db.reference(f"db-volatex/operators/{data['nome']}")
+        db_operators.set(data)
+        return "Operador inserido com sucesso !!"
+
+    def save_product_supplier(self, data: dict):
+        db_products_supplier = db.reference(f"db-volatex/products_supplier/{data['fornecedor']}-{data['produto']}")
+        db_products_supplier.set(data)
+        return "Fornecedor inserido com sucesso !!"
