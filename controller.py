@@ -2,7 +2,6 @@ import uvicorn
 import firebase_admin
 from fastapi import FastAPI
 from firebase_admin import credentials
-from services.userService import UserService
 from services.registerService import RegisterService
 
 if not firebase_admin._apps:
@@ -14,7 +13,6 @@ firebase_admin.initialize_app(cred, {
 
 
 app = FastAPI()
-userService = UserService()
 registerService = RegisterService()
 
 
