@@ -7,4 +7,4 @@ Documentação da API feita para ser usada como Back-End do sistema de controle 
 
 ### Endpoints:
 
-[ENDPOINTS]()
+![ENDPOINTS](https://github.com/kanyesteves/fastapi-volatex/blob/master/ENDPOINTS.png)
