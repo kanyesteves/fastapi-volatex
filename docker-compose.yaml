@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+  web-streamlit:
+    image: producao-volatex
+    container_name: web
+    networks:
+      - volatex
+    depends_on:
+      - api-fastapi
+    ports:
+      - "8001:8001"
+#    environment:
+#      - API_CONTAINER=api
+#      - API_PORT=8000
+    links:
+      - api-fastapi:fastapi
+    restart: always
+  api-fastapi:
+    image: fastapi-volatex
+    container_name: api
+    networks:
+      - volatex
+    expose:
+      - "8000"
+
+networks:
+  volatex:
+    driver: bridge
