@@ -3,6 +3,7 @@ version: '3'
 services:
   web-streamlit:
     image: producao-volatex
+    build: https://github.com/kanyesteves/producao-volatex.git#master
     container_name: web
     networks:
       - volatex
@@ -10,14 +11,12 @@ services:
       - api-fastapi
     ports:
       - "8001:8001"
-#    environment:
-#      - API_CONTAINER=api
-#      - API_PORT=8000
     links:
       - api-fastapi:fastapi
     restart: always
   api-fastapi:
     image: fastapi-volatex
+    build: https://github.com/kanyesteves/fastapi-volatex.git#master
     container_name: api
     networks:
       - volatex
